@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评价体系 - 游戏好评率与好评数</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 页面全局样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('assets/background.jpg'); /* 替换为你的背景图片路径 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* 固定背景图 */
+            color: white;
+            text-align: center;
+        }
+
+        /* 页头样式 */
+        header {
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 0;
+            padding: 20px 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav a:hover {
+            color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        /* 页面内容 */
+        .container {
+            margin: 40px auto;
+            max-width: 1200px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .container h2 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: #f39c12;
+        }
+
+        select {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 图表区域 */
+        #chart, #detail-chart {
+            width: 90%;
+            height: 500px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <header>Steam 游戏数据可视化平台</header>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="games.html">游戏列表</a>
+        <a href="charts.html">数据图表</a>
+        <a href="rating_system.html">评价体系</a>
+    </nav>
+
+    <!-- 页面内容 -->
+    <div class="container">
+        <h2>游戏评价体系</h2>
+        <!-- 游戏类型选择 -->
+        <select id="game-type">
+            <option value="All">全部类型</option>
+            <option value="RPG">RPG</option>
+            <option value="Action">Action</option>
+            <option value="Casual">Casual</option>
+        </select>
+
+        <!-- 主图表区域 -->
+        <div id="chart"></div>
+
+        <!-- 单个游戏详细图表 -->
+        <h2>单个游戏好评详情</h2>
+        <div id="detail-chart"></div>
+    </div>
+
+    <!-- 图表逻辑 -->
+    <script>
+        const gameData = [
+            { name: "Elden Ring", type: "RPG", rating: 95, positive: 120000 },
+            { name: "Cyberpunk 2077", type: "RPG", rating: 78, positive: 85000 },
+            { name: "Stardew Valley", type: "Casual", rating: 98, positive: 400000 },
+            { name: "Among Us", type: "Casual", rating: 93, positive: 350000 },
+            { name: "The Witcher 3", type: "RPG", rating: 96, positive: 200000 },
+            { name: "Hades", type: "Action", rating: 94, positive: 150000 },
+        ];
+
+        const gameTypeSelect = document.getElementById('game-type');
+        const chartDom = document.getElementById('chart');
+        const detailDom = document.getElementById('detail-chart');
+        let myChart = echarts.init(chartDom);
+        let detailChart = echarts.init(detailDom);
+
+        function renderCharts(type = 'All') {
+            const filteredData = type === 'All' ? gameData : gameData.filter(g => g.type === type);
+            const names = filteredData.map(g => g.name);
+            const ratings = filteredData.map(g => g.rating);
+            const positives = filteredData.map(g => g.positive);
+
+            // 主图表：好评率
+            myChart.setOption({
+                title: { text: `${type === 'All' ? '全部类型' : type} 游戏评价概览`, left: 'center' },
+                tooltip: { trigger: 'axis' },
+                xAxis: { type: 'category', data: names, name: '游戏名称' },
+                yAxis: { type: 'value', name: '好评率 (%)' },
+                series: [
+                    {
+                        name: '好评率',
+                        type: 'bar',
+                        data: ratings,
+                        label: { show: true, position: 'top' },
+                        itemStyle: { color: '#73C0DE' }
+                    }
+                ]
+            });
+
+            // 详细图表：好评数量
+            detailChart.setOption({
+                title: { text: '好评数量分布', left: 'center' },
+                tooltip: { trigger: 'item', formatter: '{b}: {c} 条好评' },
+                xAxis: { type: 'category', data: names, name: '游戏名称' },
+                yAxis: { type: 'value', name: '好评数量' },
+                series: [
+                    {
+                        name: '好评数量',
+                        type: 'line',
+                        data: positives,
+                        symbolSize: 10,
+                        itemStyle: { color: '#FF8C00' },
+                        label: { show: true, position: 'top' }
+                    }
+                ]
+            });
+        }
+
+        // 初次渲染
+        renderCharts();
+
+        // 监听游戏类型选择变化
+        gameTypeSelect.addEventListener('change', (e) => renderCharts(e.target.value));
+    </script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏价格区间统计</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 页面整体样式 */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('assets/background.jpg'); /* 替换为你的背景图片路径 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            text-align: center;
+        }
+
+        /* 页头样式 */
+        header {
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 0;
+            padding: 20px 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav a:hover {
+            color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        /* 图表区域 */
+        #main {
+            width: 80%;
+            height: 600px;
+            margin: 30px auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-top: 20px;
+            color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <header>Steam 游戏数据可视化平台</header>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="games.html">游戏列表</a>
+        <a href="charts.html">数据图表</a>
+        <a href="rating_chart.html">评价体系</a>
+    </nav>
+
+    <!-- 页面内容 -->
+    <h2>游戏价格区间统计 - 散点图</h2>
+    <div id="main"></div>
+
+    <!-- 图表脚本 -->
+    <script>
+        var chartDom = document.getElementById('main');
+        var myChart = echarts.init(chartDom);
+        var option;
+
+        // 游戏价格区间与数量数据
+        const data = [
+            [5, 10, 50, '0-10'],   // [x: 最低价格, y: 最高价格, 点大小: 数量, 区间名]
+            [15, 20, 40, '10-20'],
+            [25, 30, 30, '20-30'],
+            [35, 40, 20, '30-40'],
+            [45, 50, 10, '40-50'],
+            [55, 60, 5, '50+']
+        ];
+
+        option = {
+            backgroundColor: new echarts.graphic.RadialGradient(0.3, 0.3, 0.8, [
+                { offset: 0, color: '#f7f8fa' },
+                { offset: 1, color: '#cdd0d5' }
+            ]),
+            title: {
+                text: '游戏价格区间与数量关系',
+                left: 'center',
+                textStyle: { color: '#333' }
+            },
+            xAxis: {
+                name: '最低价格',
+                splitLine: { lineStyle: { type: 'dashed' } },
+                scale: true
+            },
+            yAxis: {
+                name: '最高价格',
+                splitLine: { lineStyle: { type: 'dashed' } },
+                scale: true
+            },
+            series: [
+                {
+                    name: '游戏价格区间',
+                    type: 'scatter',
+                    data: data,
+                    symbolSize: function (data) {
+                        return Math.sqrt(data[2]) * 2; // 根据游戏数量决定点的大小
+                    },
+                    emphasis: {
+                        focus: 'series',
+                        label: {
+                            show: true,
+                            formatter: function (param) {
+                                return param.data[3] + '\n数量: ' + param.data[2];
+                            },
+                            position: 'top'
+                        }
+                    },
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(120, 36, 50, 0.5)',
+                        shadowOffsetY: 5,
+                        color: new echarts.graphic.RadialGradient(0.4, 0.3, 1, [
+                            { offset: 0, color: 'rgb(251, 118, 123)' },
+                            { offset: 1, color: 'rgb(204, 46, 72)' }
+                        ])
+                    }
+                }
+            ]
+        };
+
+        // 渲染图表
+        myChart.setOption(option);
+
+        // 点击事件，跳转到新页面并携带价格区间参数
+        myChart.on('click', function (params) {
+            const priceRange = params.data[3]; // 获取点击的价格区间名称
+            window.location.href = `rating_chart.html?range=${encodeURIComponent(priceRange)}`;
+        });
+    </script>
+</body>
+</html>

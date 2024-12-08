@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据可视化 - 每月在线人数峰值</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+    <style>
+        /* 页面全局样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('assets/background.jpg'); /* 替换为你的背景图片路径 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed; /* 固定背景图 */
+            color: white;
+            text-align: center;
+        }
+
+        /* 页头样式 */
+        header {
+            text-align: center;
+            font-size: 2.2em; /* 字体略大 */
+            font-weight: bold;
+            margin: 0;
+            padding: 20px 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav a:hover {
+            color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        /* 页面内容样式 */
+        .container {
+            margin: 40px auto;
+            max-width: 1200px;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #f39c12;
+        }
+
+        input, select {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 80%;
+            max-width: 600px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            color: #333;
+            box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(241, 196, 15, 0.8);
+        }
+
+        /* 图表区域 */
+        #chart {
+            width: 100%;
+            height: 500px;
+            margin-top: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <header>Steam 游戏数据可视化平台</header>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="games.html">游戏列表</a>
+        <a href="charts.html">数据图表</a>
+        <a href="rating_system.html">评价体系</a>
+    </nav>
+
+    <!-- 页面内容 -->
+    <div class="container">
+        <h2>选择或搜索游戏，查看每月在线人数峰值</h2>
+        <!-- 搜索框和下拉框 -->
+        <input type="text" id="searchBox" placeholder="输入游戏名称进行搜索...">
+        <select id="gameSelector"></select>
+        <!-- 图表区域 -->
+        <div id="chart"></div>
+    </div>
+
+    <!-- 脚本逻辑 -->
+    <script>
+        const steamData = [
+            { name: 'Game A', monthlyPeakPlayers: [5000, 7000, 8000, 6000, 7500, 8800, 9500, 7200, 8000, 8500, 9300, 9700], price: 49.99, discount: '10%', developer: 'Dev A', releaseDate: '2023-01-01', rating: 'Very Positive', url: 'http://game-a.com' },
+            { name: 'Game B', monthlyPeakPlayers: [3000, 4000, 4500, 3800, 4700, 4900, 5200, 5300, 5500, 5800, 6000, 6200], price: 29.99, discount: '20%', developer: 'Dev B', releaseDate: '2022-08-15', rating: 'Mixed', url: 'http://game-b.com' },
+            { name: 'Game C', monthlyPeakPlayers: [2000, 2500, 3000, 2800, 3300, 3500, 3700, 3900, 4100, 4300, 4500, 4800], price: 19.99, discount: '5%', developer: 'Dev C', releaseDate: '2021-05-10', rating: 'Positive', url: 'http://game-c.com' }
+        ];
+
+        const chartDom = document.getElementById('chart');
+        const searchBox = document.getElementById('searchBox');
+        const gameSelector = document.getElementById('gameSelector');
+        const myChart = echarts.init(chartDom);
+
+        // 填充选择框
+        steamData.forEach(game => {
+            const option = document.createElement('option');
+            option.value = game.name;
+            option.textContent = game.name;
+            gameSelector.appendChild(option);
+        });
+
+        // 渲染图表函数
+        function renderChart(game) {
+            const option = {
+                title: { text: `${game.name} 每月在线人数峰值`, left: 'center' },
+                xAxis: { type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'] },
+                yAxis: { type: 'value', name: '在线人数' },
+                series: [
+                    { name: '峰值人数', type: 'bar', data: game.monthlyPeakPlayers },
+                    { name: '趋势线', type: 'line', data: game.monthlyPeakPlayers, smooth: true, lineStyle: { color: '#FF8C00' } }
+                ]
+            };
+            myChart.setOption(option);
+        }
+
+        // 初始渲染第一个游戏数据
+        renderChart(steamData[0]);
+
+        // 下拉框切换
+        gameSelector.addEventListener('change', () => {
+            const selectedGame = steamData.find(game => game.name === gameSelector.value);
+            renderChart(selectedGame);
+        });
+
+        // 搜索框功能
+        searchBox.addEventListener('input', () => {
+            const query = searchBox.value.trim().toLowerCase();
+            const filteredGame = steamData.find(game => game.name.toLowerCase().includes(query));
+            if (filteredGame) {
+                renderChart(filteredGame);
+            }
+        });
+    </script>
+</body>
+</html>

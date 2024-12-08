@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>游戏查询与详情展示</title>
+    <style>
+        /* 页面整体样式 */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('assets/background.jpg'); /* 替换为你的背景路径 */
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+            text-align: center;
+        }
+
+        /* 页头样式 */
+        header {
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: bold;
+            margin: 0;
+            padding: 20px 10px;
+            background-color: rgba(0, 0, 0, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* 导航栏 */
+        nav {
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 10px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        nav a:hover {
+            color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        /* 容器 */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #f39c12;
+        }
+
+        /* 搜索栏 */
+        .search-bar {
+            padding: 12px;
+            width: 80%;
+            max-width: 600px;
+            margin: 10px auto 20px auto;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+            color: #333;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            box-shadow: 0px 0px 10px rgba(241, 196, 15, 0.8);
+        }
+
+        /* 游戏详情展示区域 */
+        .game-detail {
+            background-color: #1e1e2f;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            margin-bottom: 20px;
+            display: none;
+            text-align: left;
+            color: #dcdfe4;
+        }
+
+        .game-header h2 {
+            font-size: 28px;
+            margin: 10px 0;
+            color: #f39c12;
+        }
+
+        .game-info p {
+            margin: 8px 0;
+        }
+
+        .website a {
+            color: #61afef;
+            text-decoration: none;
+        }
+
+        .website a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 -->
+    <header>Steam 游戏数据可视化平台</header>
+
+    <!-- 导航栏 -->
+    <nav>
+        <a href="index.html">首页</a>
+        <a href="games.html">游戏列表</a>
+        <a href="charts.html">数据图表</a>
+        <a href="rating_system.html">评价体系</a>
+    </nav>
+
+    <!-- 页面内容 -->
+    <div class="container">
+        <h2>输入游戏名称进行搜索</h2>
+        <input type="text" id="searchBox" class="search-bar" placeholder="输入游戏名称搜索...">
+
+        <!-- 游戏详情展示 -->
+        <div id="gameDetail" class="game-detail">
+            <div class="game-header">
+                <h2 id="gameTitle"></h2>
+                <p><strong>价格：</strong> <span id="originalPrice"></span> → <span id="discountedPrice"></span></p>
+                <p><strong>发布日期：</strong> <span id="releaseDate"></span></p>
+                <p><strong>开发商：</strong> <span id="developer"></span></p>
+                <p><strong>发行商：</strong> <span id="publisher"></span></p>
+                <p><strong>评价：</strong> <span id="reviews"></span></p>
+                <p><strong>最低配置：</strong> <span id="requirements"></span></p>
+                <p class="website">
+                    <strong>官方网站：</strong> <a href="#" target="_blank" id="gameLink"></a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let games = [];
+
+        const searchBox = document.getElementById("searchBox");
+        const gameDetail = document.getElementById("gameDetail");
+        const gameTitle = document.getElementById("gameTitle");
+        const originalPrice = document.getElementById("originalPrice");
+        const discountedPrice = document.getElementById("discountedPrice");
+        const releaseDate = document.getElementById("releaseDate");
+        const developer = document.getElementById("developer");
+        const publisher = document.getElementById("publisher");
+        const reviews = document.getElementById("reviews");
+        const requirements = document.getElementById("requirements");
+        const gameLink = document.getElementById("gameLink");
+
+        // 加载 JSON 数据
+        fetch('./games.json')
+            .then(response => response.json())
+            .then(data => {
+                games = data;
+            })
+            .catch(err => console.error("加载 JSON 数据失败:", err));
+
+        // 搜索功能
+        searchBox.addEventListener("input", () => {
+            const query = searchBox.value.trim().toLowerCase();
+            const game = games.find(g => g.Title.toLowerCase().includes(query));
+
+            if (game) {
+                gameDetail.style.display = "block";
+                gameTitle.textContent = game.Title;
+                originalPrice.textContent = game["Original Price"];
+                discountedPrice.textContent = game["Discounted Price"];
+                releaseDate.textContent = game["Release Date"];
+                developer.textContent = game.Developer;
+                publisher.textContent = game.Publisher;
+                reviews.textContent = game["All Reviews Summary"];
+                requirements.textContent = game["Minimum Requirements"];
+                gameLink.href = game.Link;
+                gameLink.textContent = "点击进入官方网站";
+            } else {
+                gameDetail.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>

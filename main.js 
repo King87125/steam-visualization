@@ -1,0 +1,134 @@
+// main.js
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("Steam 游戏数据可视化页面加载完成");
+
+    // 如果页面有特定的容器，加载对应的功能
+    if (document.getElementById("games-list")) {
+        renderGameList();
+    }
+
+    if (document.getElementById("main")) {
+        renderGameTypeChart();
+    }
+
+    if (document.getElementById("price-chart")) {
+        renderPriceChart();
+    }
+
+    /**
+     * 渲染游戏列表页面 (games.html)
+     */
+    function renderGameList() {
+        const container = document.getElementById("games-list");
+        steamData.forEach(game => {
+            container.innerHTML += `
+                <div class="card">
+                    <h3>${game.name}</h3>
+                    <p>价格: $${game.price} | 折扣: ${game.discount}%</p>
+                    <p>历史低价: $${game.lowestPrice}</p>
+                    <p>评价: ${game.reviews}</p>
+                    <p>标签: ${game.tags.join(", ")}</p>
+                    <p>平均成就点数: ${game.avgAchievement}</p>
+                    <p>在线人数峰值: ${game.peakPlayers}</p>
+                </div>
+            `;
+        });
+    }
+
+    /**
+     * 渲染游戏类型与数量关系的玫瑰图 (index.html)
+     */
+    function renderGameTypeChart() {
+        const chartDom = document.getElementById('main');
+        const myChart = echarts.init(chartDom);
+
+        // 统计游戏标签与数量
+        const tagCount = {};
+        steamData.forEach(game => {
+            game.tags.forEach(tag => {
+                tagCount[tag] = (tagCount[tag] || 0) + 1;
+            });
+        });
+
+        // 转换为 ECharts 数据格式
+        const tagData = Object.keys(tagCount).map(tag => ({
+            name: tag,
+            value: tagCount[tag]
+        }));
+
+        // 图表配置项
+        const option = {
+            title: {
+                text: '游戏类型与数量关系',
+                left: 'center'
+            },
+            legend: {
+                top: 'bottom'
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    mark: { show: true },
+                    dataView: { show: true, readOnly: false },
+                    restore: { show: true },
+                    saveAsImage: { show: true }
+                }
+            },
+            series: [
+                {
+                    name: '游戏类型数量',
+                    type: 'pie',
+                    radius: [50, 250],
+                    center: ['50%', '50%'],
+                    roseType: 'area',
+                    itemStyle: {
+                        borderRadius: 8
+                    },
+                    data: tagData
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+    }
+
+    /**
+     * 渲染价格与在线人数的图表 (charts.html)
+     */
+    function renderPriceChart() {
+        const chartDom = document.getElementById('price-chart');
+        const myChart = echarts.init(chartDom);
+
+        const option = {
+            title: {
+                text: '游戏价格与在线人数峰值',
+                left: 'center'
+            },
+            tooltip: {},
+            legend: {
+                data: ['价格', '在线人数峰值']
+            },
+            xAxis: {
+                type: 'category',
+                data: steamData.map(game => game.name)
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '价格',
+                    type: 'bar',
+                    data: steamData.map(game => game.price)
+                },
+                {
+                    name: '在线人数峰值',
+                    type: 'line',
+                    data: steamData.map(game => game.peakPlayers)
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+    }
+});
